@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Progressive Web App Demo</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="manifest" href="manifest.json" />
+  </head>
+
+  <body>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("sw.js").then(function (registration) {
+          console.log("Service Worker Registered");
+        });
+      }
+    </script>
+    <div id="app">
+      <h1>Demo PWA</h1>
+      <label
+        >Elapsed Time: <progress :value="elapsed / duration"></progress
+      ></label>
+      <div>{{ (elapsed / 1000).toFixed(1) }}s</div>
+      <div>
+        Duration: <input type="range" v-model="duration" min="1" max="30000" />
+        {{ (duration / 1000).toFixed(1) }}s
+      </div>
+      <button @click="elapsed = 0">Reset</button>
+    </div>
+    <script>
+      new Vue({
+        el: "#app",
+        data: {
+          elapsed: 0,
+          duration: 10000,
+        },
+        data() {
+          return {
+            duration: 15 * 1000,
+            elapsed: 0,
+          };
+        },
+        created() {
+          let lastTime = performance.now();
+          const update = () => {
+            const time = performance.now();
+            this.elapsed += Math.min(
+              time - lastTime,
+              this.duration - this.elapsed
+            );
+            lastTime = time;
+            this.handle = requestAnimationFrame(update);
+          };
+          update();
+        },
+        unmounted() {
+          cancelAnimationFrame(this.handle);
+        },
+      });
+    </script>
+  </body>
+</html>
